@@ -536,25 +536,83 @@ select department,avg(salary) as avg_salary from emp1
 group by department
 order by avg_salary asc
 limit 1
+
 -- 15. HAVING
 -- Find departments having more than 2 employees.
--- Find departments having at least 2 employees.
--- Find departments where average salary is greater than 60,000.
--- Find departments where total salary is greater than 100,000.
--- Find departments where maximum salary is greater than 70,000.
--- Find departments where minimum salary is greater than 40,000.
--- Find departments where average age is greater than 25.
--- Find departments having total salary between 100,000 and 200,000.
--- Find departments having more than 3 employees and average salary greater than 50,000.
--- Find departments where total salary is greater than 150,000 and employee count is greater than 2.
+select department,count(*) from emp1
+group by department
+having count(*)>2
 
+-- Find departments having at least 2 employees.
+select department,count(*) from emp1
+group by department
+having count(*)>=2
+
+-- Find departments where average salary is greater than 60,000.
+select department,avg(salary) from emp1
+group by department
+having avg(salary)>60000
+
+-- Find departments where total salary is greater than 100,000.
+select department,sum(salary) from emp1
+group by department
+having salary > 100000
+
+-- Find departments where maximum salary is greater than 70,000.
+select department,max(salary) from emp1
+group by department
+having max(salary) > 70000
+
+-- Find departments where minimum salary is greater than 40,000.
+select department,min(salary) from emp1
+group by department
+having min(salary) > 40000
+
+-- Find departments where average age is greater than 25.
+select department,avg(age) from emp1
+group by department
+having avg(age) > 25
+
+-- Find departments having total salary between 100,000 and 200,000.
+select department,sum(salary) from emp1
+group by department
+having sum(salary) between 100000 and 200000
+ 
+-- Find departments having more than 3 employees and average salary greater than 50,000.
+select department, count(*),avg(salary) from emp1
+group by department
+having avg(salary) > 50000 and count(*)>3
+
+-- Find departments where total salary is greater than 150,000 and employee count is greater than 2.
+select department, count(*),avg(salary) from emp1
+group by department
+having avg(salary) > 150000 and count(*)>2
 
 -- 16. WHERE vs HAVING
 -- Find departments having employees whose salary is greater than 50,000.
--- Find departments where employees earning more than 50,000 are more than 2.
--- Find departments whose average salary is greater than 60,000.
--- Find departments having at least 2 employees with salary greater than 50,000.
+select department,sum(salary) from emp1
+group by department
+having sum(salary) > 50000 
 
+-- Find departments where employees earning more than 50,000 are more than 2.
+select department, count(*),sum(salary) from emp1
+where salary > 150000
+group by department
+having count(*)>2
+
+-- Find departments whose average salary is greater than 60,000.
+select department, avg(salary) from emp1
+group by department
+having avg(salary) >60000
+
+-- Find departments having at least 2 employees with salary greater than 50,000.
+SELECT
+    department,
+    COUNT(*) AS high_salary_employees
+FROM emp1
+WHERE salary > 50000
+GROUP BY department
+HAVING COUNT(*) >= 2;
 
 CREATE TABLE departs (
     department_id   INT PRIMARY KEY,
@@ -713,13 +771,371 @@ right join departs d on d.department_id=e.department_id
 
 -- 21. FULL OUTER JOIN
 -- Display all employees and all departments.
+SELECT *
+FROM emps AS e
+FULL OUTER JOIN departs AS d
+    ON e.department_id = d.department_id;
 
 -- Find employees without departments.
+SELECT *
+FROM emps AS e
+FULL OUTER JOIN departs AS d
+ON e.department_id = d.department_id
+where d.department_id is null 
+	
 -- Find departments without employees.
+SELECT *
+FROM emps AS e
+FULL OUTER JOIN departs AS d
+ON e.department_id = d.department_id
+where e.department_id is null 
+
 -- Find all matching and non-matching records.
+SELECT *
+FROM emps AS e
+FULL OUTER JOIN departs AS d
+ON e.department_id = d.department_id
+where d.department_id is null or e.department_id is null 
+
 -- 22. JOIN + WHERE Questions
 -- Find employees working in IT.
+select *
+from emps as e
+inner join departs as d
+ON e.department_id = d.department_id
+where d.department_name = 'IT'
+
 -- Find employees earning more than 60,000 and display their department.
+select *
+from emps as e
+inner join departs as d
+ON e.department_id = d.department_id
+where salary > 60000
+
 -- Find employees from HR earning more than 45,000.
+select * 
+from emps as e
+inner join departs as d
+on e.department_id = d.department_id
+where d.department_name = 'HR' and salary > 45000
+
 -- Find employees from IT or Finance.
+select * 
+from emps as e
+inner join departs as d
+on e.department_id = d.department_id
+where d.department_name = 'IT' or d.department_name = 'Finance' 
+
 -- Find employees whose salary is above their department's threshold.
+SELECT
+    e.employee_id,
+    e.name,
+    e.department,
+    e.salary
+FROM emp1 AS e
+WHERE e.salary > (
+    SELECT AVG(e2.salary)
+    FROM emp1 AS e2
+    WHERE e2.department = e.department
+);
+
+-- 23. JOIN + GROUP BY Questions
+-- Find employee count in each department.
+select d.department_name,count(e.employee_id)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+
+-- Find total salary by department.
+select d.department_name,sum(e.salary)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+
+-- Find average salary by department.
+select d.department_name,avg(salary)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+
+-- Find maximum salary by department.
+select d.department_name,max(salary)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+
+-- Find minimum salary by department.
+select d.department_name,min(e.salary)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+
+-- Find department with the highest total salary.
+select d.department_name,max(e.salary)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+
+-- Find department with the highest average salary.
+select d.department_name,avg(salary) avg_salary
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+order by avg_salary desc
+limit 1
+
+-- Find departments having more than 2 employees.
+select d.department_name,count(*)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+having count(*) > 2
+
+-- Find departments having average salary greater than 60,000.
+select d.department_name,avg(salary)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+having avg(salary) >60000
+
+-- Find departments where total salary exceeds 150,000.
+select d.department_name,sum(salary)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+having sum(salary) > 150000
+
+-- 24. JOIN + GROUP BY + HAVING
+
+
+-- Find departments having more than 2 employees.
+select d.department_name,count(*)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+having count(*) > 2
+
+-- Find departments where average salary is greater than 60,000.
+select d.department_name,avg(salary)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+having avg(salary) >60000
+
+-- Find departments where total salary is greater than 150,000.
+select d.department_name,sum(salary)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+having sum(salary) > 150000
+
+-- Find departments having at least 2 employees earning more than 50,000.
+select d.department_name,sum(salary),count(*)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+having sum(salary) > 50000 and count(*) >= 2
+
+-- Find departments where maximum salary is greater than 70,000.
+select d.department_name,max(salary)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+having max(salary) > 70000
+
+-- Find departments where minimum salary is less than 50,000.
+select d.department_name,min(salary)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+having min(salary) < 50000
+
+-- Find departments having an average age greater than 25.
+select d.department_name,avg(salary)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+having avg(salary) > 25000
+
+-- Find departments with more than 2 employees and average salary above 60,000.
+select d.department_name,count(*),avg(salary)
+from emps e
+inner join departs as d
+on e.department_id = d.department_id
+group by d.department_name
+having count(*) > 2 and avg(salary)>60000
+
+-- 25. Mixed SQL Questions
+
+-- Level 1 — Basic
+-- Display all employees.
+select * from emp1
+
+-- Display employee names and salaries.
+select name,salary from emp1
+
+-- Find employees earning more than 50,000.
+select * from emp1
+where salary > 50000
+
+-- Find employees from IT.
+select * from emp1
+where department ='IT'
+
+-- Display unique departments.
+select distinct department from emp1
+
+-- Sort employees by salary descending.
+select * from emp1
+order by salary desc
+
+-- Find the highest salary.
+select max(salary) from emp1
+
+-- Find the lowest salary.
+select min(salary) from emp1
+
+-- Find the top 3 highest-paid employees.
+select * from emp1
+order by salary desc
+limit 3
+
+-- Count total employees.
+select count(*) from emp1
+
+-- Level 2 — Intermediate
+-- Find employees earning between 50,000 and 70,000.
+select * from emp1
+where salary between 50000 and 70000
+
+-- Find employees belonging to IT or HR.
+select * from emp1
+where department='IT' or department='HR'
+
+-- Find employees whose name starts with A.
+select * from emp1
+where name like 'A%'
+
+-- Find employees older than 25.
+select * from emp1
+where age > 25
+
+-- Find the average salary.
+select avg(salary) from emp1
+
+-- Find total salary.
+select sum(salary) from emp1
+
+-- Find maximum salary in IT.
+select max(salary) from emp1 
+where department = 'IT'
+
+-- Find minimum salary in HR.
+select min(salary) from emp1 
+where department = 'HR'
+
+-- Count employees in each department.
+select department,count(*) from emp1
+group by department
+
+-- Find average salary for each department.
+select department,avg(salary) from emp1
+group by department
+
+-- Level 3 — Advanced
+-- Find departments having more than 2 employees.
+select department,count(*) from emp1
+group by department
+having count(*) > 2
+
+-- Find departments where average salary is greater than 60,000.
+select department,avg(salary) from emp1
+group by department
+having avg(salary) > 60000
+
+-- Find the highest-paid employee.
+select * from emp1
+where salary is not null
+order by salary desc
+limit 1
+
+-- Find the second-highest salary.
+select * from emp1
+where salary is not null
+order by salary desc
+limit 1 offset 1
+
+-- Find the third-highest salary.
+select * from emp1
+where salary is not null
+order by salary desc
+limit 1 offset 2
+
+-- Find the department with the highest average salary.
+select department,avg(salary) avg_salary from emp1
+group by department
+order by avg_salary desc
+limit 1
+
+-- Find the department with the highest total salary.
+select department,sum(salary) sum_salary from emp1
+group by department
+order by sum_salary desc
+limit 1
+
+-- Find employees who earn more than the average salary.
+select * from emp1
+where salary > (
+	select avg(salary) from emp1
+)
+
+-- Find employees who belong to departments having more than 2 employees.
+select d.department_name,count(*) from emps e
+join departs d on e.department_id = d.department_id
+group by d.department_name
+having count(*) > 2
+
+-- Find the highest-paid employee in each department.
+select d.department_name,max(salary) from emps e
+join departs d on e.department_id = d.department_id
+group by d.department_name
+
+WITH ranked_employees AS (
+    SELECT
+        e.employee_id,
+        e.name,
+        e.department_id,
+        d.department_name,
+        e.salary,
+        RANK() OVER (
+            PARTITION BY e.department_id
+            ORDER BY e.salary DESC
+        ) AS salary_rank
+    FROM emps AS e
+    JOIN departs AS d
+        ON e.department_id = d.department_id
+)
+SELECT
+    employee_id,
+    name,
+    department_name,
+    salary
+FROM ranked_employees
+WHERE salary_rank = 1;
